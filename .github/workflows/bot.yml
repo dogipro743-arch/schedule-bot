@@ -5,6 +5,10 @@ on:
     - cron: "*/5 * * * *"
   workflow_dispatch:
 
+permissions:
+  actions: write
+  contents: read
+
 concurrency:
   group: bot
   cancel-in-progress: false
@@ -12,7 +16,7 @@ concurrency:
 jobs:
   run:
     runs-on: ubuntu-latest
-    timeout-minutes: 7
+    timeout-minutes: 62
     steps:
       - uses: actions/checkout@v4
 
@@ -34,3 +38,9 @@ jobs:
           BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
           GROUP: ${{ vars.GROUP }}
         run: python bot.py
+
+      - name: Start next run
+        if: success()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run bot.yml --repo ${{ github.repository }}
