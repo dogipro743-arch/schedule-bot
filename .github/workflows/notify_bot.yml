@@ -1,0 +1,46 @@
+name: notify-bot
+
+on:
+  schedule:
+    - cron: "*/5 * * * *"
+  workflow_dispatch:
+
+permissions:
+  actions: write
+  contents: read
+
+concurrency:
+  group: notify-bot
+  cancel-in-progress: false
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 62
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - run: pip install httpx
+
+      - name: Restore state
+        uses: actions/cache@v4
+        with:
+          path: notify_state.json
+          key: notify-state-${{ github.run_id }}
+          restore-keys: notify-state-
+
+      - name: Run notify bot
+        env:
+          NOTIFY_TOKEN: ${{ secrets.NOTIFY_TOKEN }}
+          ADMIN_USERNAMES: ${{ vars.ADMIN_USERNAMES }}
+        run: python notify_bot.py
+
+      - name: Start next run
+        if: success()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run notify_bot.yml --repo ${{ github.repository }}
