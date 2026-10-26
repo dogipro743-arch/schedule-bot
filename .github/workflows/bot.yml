@@ -37,6 +37,9 @@ jobs:
         env:
           BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
           GROUP: ${{ vars.GROUP }}
+          NOTIFY_TOKEN: ${{ secrets.NOTIFY_TOKEN }}
+          ADMIN_USERNAMES: ${{ vars.ADMIN_USERNAMES }}
+          ADMIN_IDS: ${{ vars.ADMIN_IDS }}
         run: python bot.py
 
       - name: Start next run
